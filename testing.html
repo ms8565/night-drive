@@ -99,7 +99,7 @@
 
     <script>
         
-        class Model{
+        /*class Model{
             constructor(position, defaultTexture, maskTexture){
                 this.position = position;
                 this.defaultTexture = defaultTexture;
@@ -127,7 +127,7 @@
             draw(){
                 
             }
-        }
+        }*/
 
         if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
@@ -227,6 +227,10 @@
 
             var texture2 = new THREE.TextureLoader().load( 'media/leaves2.jpg' );
             var texture1 = new THREE.TextureLoader().load( 'media/crate.gif' );
+            
+            for(var i = 0; i < 1000; i++){
+                console.log("wait");
+            }
 
             var texturePass1 = new THREE.TexturePass( texture1 );
             var texturePass2 = new THREE.TexturePass( texture2 );
@@ -256,7 +260,7 @@
             composer.addPass( outputPass );
             
             var cubeTexture = new THREE.TextureLoader().load( 'media/cube.jpg' );
-            var material2 = new THREE.MeshPhongMaterial({map:cubeTexture, transparent: true, opacity: 0.2 });
+            var material2 = new THREE.MeshPhongMaterial({map:cubeTexture, transparent: true, opacity: 0.5 });
             
             box2 = new THREE.Mesh( new THREE.BoxGeometry( 80, 80, 80 ), material2 );
             box2.position.x = -100;
@@ -288,7 +292,7 @@
             camera.position.x += time/100;
             
             renderer.clear();
-            //composer.render( time );
+            composer.render( time );
             
             renderer.clearDepth();
             renderer.render(defaultScene, camera);
