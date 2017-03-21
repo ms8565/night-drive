@@ -1,0 +1,194 @@
+<html>
+<head>
+    <title>Testing Three.js</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <script src="js/three.js"></script>
+    
+    
+    
+    
+    <script id="fragment_shader" type="x-shader/x-fragment">
+
+        uniform float time;
+			uniform vec2 resolution;
+
+			uniform sampler2D texture;
+
+			varying vec2 vUv;
+
+			void main( void ) {
+
+				vec2 position = -1.0 + 2.0 * vUv;
+
+				float a = atan( position.y, position.x );
+				float r = sqrt( dot( position, position ) );
+
+				vec2 uv;
+				uv.x = 100;
+				uv.y = sin( a ) / r;
+				uv /= 10.0;
+				uv += time * 0.05;
+
+				vec3 color = texture2D( texture, uv ).rgb;
+
+				gl_FragColor = vec4( color * r * 1.5, 1.0 );
+
+			}
+
+    </script>
+    
+     <script id="fragment_shader2" type="x-shader/x-fragment">
+
+        uniform float time;
+			uniform vec2 resolution;
+
+			uniform sampler2D texture;
+
+			varying vec2 vUv;
+
+			void main( void ) {
+
+				vec2 position = vUv;
+                
+                position.x = .5;
+                position.y = .5;
+                
+                vec4 color = texture2D(texture, vUv);
+                gl_FragColor = color;
+
+			}
+
+    </script>
+    
+    <script id="vertexShader" type="x-shader/x-vertex">
+
+        varying vec2 vUv;
+
+        void main()
+        {
+            vUv = uv ;
+            vec4 mvPosition = modelViewMatrix * vec4( 0.0, 0.0,0.0, 1.0 );
+            gl_Position = projectionMatrix * mvPosition;
+        }
+
+    </script>
+    
+    <script>
+        var colors = [0x0000ff, 0x00ff00, 0xff0000, 0x000fff];
+        var scene = new THREE.Scene();
+        
+        var clock = new THREE.Clock();
+
+        //Creates a perspective camera
+        //Field of view (How far you can see) is 75
+        //Aspect ratio (relationship between width and height) is width/height
+        //Near clipping plane is .1 (objects nearer than .1 won't be shown)
+        //Far clipping plane is 1000 (objects farther than 1000 won't be shown)
+		var camera = new THREE.PerspectiveCamera( 65, window.innerWidth/window.innerHeight, 0.1, 1000 );
+
+		var renderer = new THREE.WebGLRenderer();
+
+        //Scene fills the entire window
+		renderer.setSize(window.innerWidth, window.innerHeight);
+            
+        //Appends the scene to the body using DOM manipulation
+		document.body.appendChild( renderer.domElement );
+            
+        //Creates a 3D cube skeleton
+        //Radius is 1, widthSegments is 32, heightSegments is 32
+        var geometry = new THREE.BoxGeometry(1,1,1);
+        
+        //Load in a texture based on discoBall.jpg
+		var leavesTexture = new THREE.TextureLoader().load("https://people.rit.edu/ms8565/threejs/leaves.jpg");
+        
+        var uniforms1 = {
+            time:   {value: 1.0 },
+            resolution: {value: new THREE.Vector2()}
+        };
+        var uniforms2 = {
+            time:   {value: 1.0 },
+            resolution: {value: new THREE.Vector2()},
+            texture:    {value: leavesTexture}
+        };
+        
+        //uniforms2.texture.value.wrapS = uniforms2.texture.value.wrapT = THREE.RepeatWrapping;
+        
+        //var params = ['fragment_shader', uniforms1];
+
+        
+
+
+            
+        //Creates a basic material
+		//var material = new THREE.MeshBasicMaterial({ map: leavesTexture });
+		//var material = new THREE.MeshPhongMaterial({ map: leavesTexture, shininess: 70});
+        
+        var material = new THREE.ShaderMaterial({
+            uniforms: uniforms2,
+            vertexShader: document.getElementById('vertexShader').textContent,
+            fragmentShader: document.getElementById('fragment_shader2').textContent,
+        });
+        
+        //var spotlight = new THREE.PointLight(0xffffff, 1);
+        //spotlight.position.set(10, 10, 50);
+        //scene.add(spotlight);
+
+        //Create a cube mesh object
+        //Mesh is the part that actually get rendered, since it has both a shape and texture
+        var cube = new THREE.Mesh(geometry, material);
+        //cube.position.y = 2;
+        scene.add(cube);
+
+        //Ambient white light
+        var light = new THREE.AmbientLight(0xffffff);
+        scene.add(light);
+            
+        //Moves the camera back so we can see the cube
+		camera.position.z = 5;
+
+        //Array of possible light colors
+		var colors = [0x0000ff, 0x00ff00, 0xff0000, 0x000fff];
+        //Time counter
+		var counter = 0;
+
+        //Repeating render function that will display our scene during every animation frame
+		var render = function () {
+            //Tells the browser to repeat this function
+		    requestAnimationFrame(render);
+		    counter++;
+
+		    //Rotate our cube to the right
+		    cube.rotation.y += 0.01;
+
+            //After the counter goes off, change that color
+		    if (counter > 10) {
+		        counter = 0;
+
+		       // spotlight.color.set(colors[Math.floor(Math.random() * colors.length)]);
+		    }
+            
+            var delta = clock.getDelta();
+
+            uniforms1.time.value += delta * 5;
+            uniforms2.time.value = clock.elapsedTime;
+
+            //Displays the entire scene via the camera
+			renderer.render(scene, camera);
+		};
+
+        //Start off our render cycle
+		render();
+    </script>
+</body>
+</html>
